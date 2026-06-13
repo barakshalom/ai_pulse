@@ -4,7 +4,9 @@ import type { RawItem } from "./types";
 
 const parser = new Parser();
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+// The cron runs twice a day (08:00 and 18:00 UTC), 10h and 14h apart. Use the
+// longer gap as the lookback window so nothing is missed between runs.
+const LOOKBACK_MS = 14 * 60 * 60 * 1000;
 
 async function fetchFeed(name: string, url: string): Promise<RawItem[]> {
   try {
@@ -48,15 +50,15 @@ async function fetchHackerNews(): Promise<RawItem[]> {
   }
 }
 
-function isWithinLastDay(publishedAt: string): boolean {
+function isWithinLookback(publishedAt: string): boolean {
   const ts = new Date(publishedAt).getTime();
   if (Number.isNaN(ts)) return true; // keep items with unparseable dates rather than drop them
-  return Date.now() - ts <= ONE_DAY_MS;
+  return Date.now() - ts <= LOOKBACK_MS;
 }
 
 /**
  * Fetches all configured RSS feeds plus Hacker News, returning raw items
- * from roughly the last 24 hours.
+ * published since the previous cron run.
  */
 export async function fetchAllNews(): Promise<RawItem[]> {
   const feeds = [...OFFICIAL_FEEDS, ...NEWS_FEEDS, ...SECURITY_FEEDS];
@@ -66,5 +68,5 @@ export async function fetchAllNews(): Promise<RawItem[]> {
     fetchHackerNews(),
   ]);
 
-  return results.flat().filter((item) => item.title && isWithinLastDay(item.publishedAt));
+  return results.flat().filter((item) => item.title && isWithinLookback(item.publishedAt));
 }

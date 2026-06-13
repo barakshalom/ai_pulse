@@ -8,9 +8,9 @@ installed on your iPhone home screen with no App Store and no fees.
 
 ## How it works
 
-1. A daily cron job (`/api/cron/daily-digest`) fetches the last 24h of items
-   from official company blogs, AI news RSS feeds, security news outlets, and
-   Hacker News.
+1. A cron job (`/api/cron/daily-digest`) runs twice a day (08:00 and 18:00
+   UTC) and fetches items published since the previous run from official
+   company blogs, AI news RSS feeds, security news outlets, and Hacker News.
 2. Those items are sent to Claude (Haiku) to cluster, summarize, classify by
    category (general AI industry news vs. AI-driven security research) and
    company, and **fact-check**: stories from official blogs or corroborated by
@@ -76,8 +76,8 @@ npx vercel deploy
 ```
 
 Add the env vars above in the Vercel project settings (Production +
-Preview), then redeploy. The cron schedule is defined in `vercel.json` (daily
-at 08:00 UTC — edit the `schedule` field to change the time).
+Preview), then redeploy. The cron schedule is defined in `vercel.json` (twice
+daily at 08:00 and 18:00 UTC — edit the `schedule` fields to change the times).
 
 ## Install on iPhone
 
@@ -89,7 +89,7 @@ at 08:00 UTC — edit the `schedule` field to change the time).
 ## Project structure
 
 - `app/page.tsx` — main card feed
-- `app/api/cron/daily-digest/route.ts` — daily pipeline (fetch → summarize/fact-check → store → push)
+- `app/api/cron/daily-digest/route.ts` — twice-daily pipeline (fetch → summarize/fact-check → store → push)
 - `app/api/push/subscribe/route.ts` — saves push subscriptions
 - `lib/sources.ts` — RSS feed + news source configuration (incl. security feeds)
 - `lib/fetchNews.ts` — fetches RSS feeds + Hacker News

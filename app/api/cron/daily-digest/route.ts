@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   if (digest.cards.length > 0) {
     await sendPushToAll({
       title: "AI Pulse",
-      body: `Your daily AI briefing is ready — ${digest.cards.length} update${digest.cards.length === 1 ? "" : "s"}.`,
+      body: `Your AI briefing is ready — ${digest.cards.length} update${digest.cards.length === 1 ? "" : "s"}.`,
       url: "/",
     });
   }

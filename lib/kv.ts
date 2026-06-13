@@ -28,7 +28,7 @@ export async function saveDigest(digest: Digest): Promise<void> {
     return;
   }
   await redis.set(LATEST_DIGEST_KEY, digest);
-  await redis.set(`digest:history:${digest.date}`, digest);
+  await redis.set(`digest:history:${digest.generatedAt}`, digest);
 }
 
 export interface PushSubscriptionRecord {

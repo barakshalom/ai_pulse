@@ -61,7 +61,7 @@ const DIGEST_TOOL = {
 
 const SYSTEM_PROMPT = `You are a news editor producing a daily briefing on developments in AI, focused on Anthropic, OpenAI, Google (Gemini/DeepMind), xAI (Grok), and any new/emerging players in the field. You also track a second beat: AI being used to find security vulnerabilities (autonomous bug-hunting agents, AI-found zero-days/CVEs, AI in CTFs or bug bounties, LLM-assisted vulnerability research).
 
-You will be given a list of raw news items (title, link, source, published date, short snippet) gathered from official company blogs, general AI news outlets, and security news outlets over the last 24 hours.
+You will be given a list of raw news items (title, link, source, published date, short snippet) gathered from official company blogs, general AI news outlets, and security news outlets since the previous update.
 
 Your job:
 1. Cluster items that refer to the same underlying story/event together into a single card.
@@ -129,7 +129,7 @@ export async function generateDigest(items: RawItem[]): Promise<Digest> {
     messages: [
       {
         role: "user",
-        content: `Here are the raw news items from the last 24 hours:\n\n${JSON.stringify(
+        content: `Here are the raw news items since the previous update:\n\n${JSON.stringify(
           items,
           null,
           2
