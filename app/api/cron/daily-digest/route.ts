@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateDigest } from "@/lib/digest";
 import { fetchAllNews } from "@/lib/fetchNews";
-import { getPreviousNewCards, saveDigest, savePreviousNewCards } from "@/lib/kv";
+import { getLatestDigest, getPreviousNewCards, saveDigest, savePreviousNewCards } from "@/lib/kv";
 import { sendPushToAll } from "@/lib/push";
 
 export const maxDuration = 60;
@@ -15,7 +15,15 @@ export async function GET(request: Request) {
     }
   }
 
-  const previousNewCards = await getPreviousNewCards();
+  let previousNewCards = await getPreviousNewCards();
+  if (previousNewCards.length === 0) {
+    // Bootstrap fallback: digest:previousNewCards isn't populated yet (e.g.
+    // right after deploying this feature). Fall back to whatever is in the
+    // latest digest so its cards aren't dropped on this run.
+    const latest = await getLatestDigest();
+    if (latest) previousNewCards = latest.cards;
+  }
+
   const items = await fetchAllNews();
   const digest = await generateDigest(items, previousNewCards);
   await saveDigest(digest);
