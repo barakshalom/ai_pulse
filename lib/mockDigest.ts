@@ -1,0 +1,67 @@
+import type { Digest } from "./types";
+
+// Sample digest used as a fallback when no real digest has been generated yet
+// (e.g. first run before the cron job has executed).
+export const MOCK_DIGEST: Digest = {
+  date: new Date().toISOString().slice(0, 10),
+  generatedAt: new Date().toISOString(),
+  cards: [
+    {
+      id: "mock-0",
+      company: "anthropic",
+      title: "Claude Opus 4.8 released with improved reasoning",
+      summary:
+        "Anthropic announced Claude Opus 4.8, citing gains on reasoning and coding benchmarks. The release is rolling out across the API and Claude apps.",
+      sources: [{ name: "Anthropic", url: "https://www.anthropic.com/news" }],
+      verified: true,
+      publishedAt: new Date().toISOString(),
+    },
+    {
+      id: "mock-1",
+      company: "openai",
+      title: "Rumors of a new large training run",
+      summary:
+        "A single report suggests OpenAI may have started a new large-scale training run. No official confirmation has been made yet.",
+      sources: [{ name: "TechCrunch AI", url: "https://techcrunch.com" }],
+      verified: false,
+      verificationNote: "Reported by a single outlet, not yet confirmed by OpenAI.",
+      publishedAt: new Date().toISOString(),
+    },
+    {
+      id: "mock-2",
+      company: "google",
+      title: "Gemini update rolls out to Workspace",
+      summary:
+        "Google began rolling out an updated Gemini model integration across Workspace apps, with improved multimodal capabilities.",
+      sources: [
+        { name: "Google DeepMind", url: "https://deepmind.google/blog" },
+        { name: "The Verge AI", url: "https://www.theverge.com" },
+      ],
+      verified: true,
+      publishedAt: new Date().toISOString(),
+    },
+    {
+      id: "mock-3",
+      company: "xai",
+      title: "Grok adds real-time data integration",
+      summary:
+        "xAI announced new real-time data integration features for Grok, available to premium subscribers.",
+      sources: [{ name: "xAI", url: "https://x.ai/blog" }],
+      verified: true,
+      publishedAt: new Date().toISOString(),
+    },
+    {
+      id: "mock-4",
+      company: "other",
+      title: "Mistral previews new open-weight model",
+      summary:
+        "Mistral previewed an upcoming open-weight model release, positioning it as a competitor to leading proprietary models.",
+      sources: [
+        { name: "VentureBeat AI", url: "https://venturebeat.com" },
+        { name: "Hacker News", url: "https://news.ycombinator.com" },
+      ],
+      verified: true,
+      publishedAt: new Date().toISOString(),
+    },
+  ],
+};
