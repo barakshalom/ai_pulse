@@ -4,8 +4,8 @@ import type { RawItem } from "./types";
 
 const parser = new Parser();
 
-// The cron runs twice a day (08:00 and 18:00 UTC), 10h and 14h apart. Use the
-// longer gap as the lookback window so nothing is missed between runs.
+// The cron runs twice a day, 10h and 14h apart. Use the longer gap as the
+// lookback window so nothing is missed between runs.
 const LOOKBACK_MS = 14 * 60 * 60 * 1000;
 
 async function fetchFeed(name: string, url: string): Promise<RawItem[]> {

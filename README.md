@@ -9,8 +9,9 @@ installed on your iPhone home screen with no App Store and no fees.
 ## How it works
 
 1. A cron job (`/api/cron/daily-digest`) runs twice a day (08:00 and 18:00
-   UTC) and fetches items published since the previous run from official
-   company blogs, AI news RSS feeds, security news outlets, and Hacker News.
+   Israel time, i.e. 05:00 and 15:00 UTC during IDT / adjust by 1h for IST)
+   and fetches items published since the previous run from official company
+   blogs, AI news RSS feeds, security news outlets, and Hacker News.
 2. Those items are sent to Claude (Haiku) to cluster, summarize, classify by
    category (general AI industry news vs. AI-driven security research) and
    company, and **fact-check**: stories from official blogs or corroborated by
@@ -77,7 +78,9 @@ npx vercel deploy
 
 Add the env vars above in the Vercel project settings (Production +
 Preview), then redeploy. The cron schedule is defined in `vercel.json` (twice
-daily at 08:00 and 18:00 UTC — edit the `schedule` fields to change the times).
+daily at 05:00 and 15:00 UTC, i.e. 08:00 and 18:00 Israel Daylight Time —
+note Vercel cron schedules are always UTC, so adjust the `schedule` fields by
+1h when Israel switches to/from daylight saving time).
 
 ## Install on iPhone
 
