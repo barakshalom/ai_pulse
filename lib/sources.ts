@@ -21,14 +21,19 @@ export const NEWS_FEEDS: FeedConfig[] = [
   { name: "Ars Technica", url: "https://feeds.arstechnica.com/arstechnica/index" },
 ];
 
-// AI-driven security research - news about AI/LLM systems or agents being used
-// to discover, triage, or exploit software vulnerabilities (e.g. AI-found
-// zero-days, autonomous bug-hunting agents, AI-assisted CTF/bug-bounty wins).
+// Security vulnerability news - newly disclosed zero-days, CVEs, and exploits
+// in widely-used products/platforms (Windows, macOS, iOS, Android, browsers,
+// etc.), whether or not AI was involved in finding them.
 export const SECURITY_FEEDS: FeedConfig[] = [
   { name: "The Hacker News", url: "https://feeds.feedburner.com/TheHackersNews" },
   { name: "BleepingComputer", url: "https://www.bleepingcomputer.com/feed/" },
   { name: "Google Project Zero", url: "https://googleprojectzero.blogspot.com/feeds/posts/default" },
-  { name: "AI Security News", url: googleNewsFeed("AI OR LLM vulnerability discovery security research agent") },
+  {
+    name: "Vulnerability News",
+    url: googleNewsFeed(
+      "zero-day OR vulnerability OR CVE Windows OR macOS OR iOS OR iPhone OR Android OR Chrome OR browser"
+    ),
+  },
 ];
 
 function googleNewsFeed(query: string): string {

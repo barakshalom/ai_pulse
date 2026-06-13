@@ -1,7 +1,8 @@
 import { Redis } from "@upstash/redis";
-import type { Digest } from "./types";
+import type { Digest, NewsCard } from "./types";
 
 const LATEST_DIGEST_KEY = "digest:latest";
+const PREVIOUS_NEW_CARDS_KEY = "digest:previousNewCards";
 const PUSH_SUBSCRIPTIONS_KEY = "push:subscriptions";
 
 let client: Redis | null = null;
@@ -29,6 +30,21 @@ export async function saveDigest(digest: Digest): Promise<void> {
   }
   await redis.set(LATEST_DIGEST_KEY, digest);
   await redis.set(`digest:history:${digest.generatedAt}`, digest);
+}
+
+/** Cards that were tagged "new" in the most recent update - used to avoid
+ * re-reporting the same stories and to carry them forward (untagged) into
+ * the next digest. */
+export async function getPreviousNewCards(): Promise<NewsCard[]> {
+  const redis = getClient();
+  if (!redis) return [];
+  return (await redis.get<NewsCard[]>(PREVIOUS_NEW_CARDS_KEY)) ?? [];
+}
+
+export async function savePreviousNewCards(cards: NewsCard[]): Promise<void> {
+  const redis = getClient();
+  if (!redis) return;
+  await redis.set(PREVIOUS_NEW_CARDS_KEY, cards);
 }
 
 export interface PushSubscriptionRecord {

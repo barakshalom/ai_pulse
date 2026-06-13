@@ -11,12 +11,16 @@ export interface NewsCard {
   id: string;
   category: Category;
   company: Company;
+  /** For 'security' cards: the affected product/platform, e.g. "Windows", "Chrome", "iOS". */
+  product?: string;
   title: string;
   summary: string;
   sources: NewsSource[];
   verified: boolean;
   verificationNote?: string;
   publishedAt: string;
+  /** True if this card was newly added in the most recent update. */
+  isNew?: boolean;
 }
 
 export interface Digest {

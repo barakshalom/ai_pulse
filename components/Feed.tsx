@@ -11,7 +11,7 @@ const FILTERS: { label: string; value: Company | "all" | "security" }[] = [
   { label: "Google", value: "google" },
   { label: "xAI", value: "xai" },
   { label: "🆕 Emerging", value: "other" },
-  { label: "🛡️ AI Security", value: "security" },
+  { label: "🐞 Vulnerabilities", value: "security" },
 ];
 
 export function Feed({ cards }: { cards: NewsCardType[] }) {

@@ -18,13 +18,18 @@ const DIGEST_TOOL = {
               type: "string",
               enum: ["industry", "security"],
               description:
-                "'security' for stories about AI/LLM systems or agents being used to discover, triage, or exploit software vulnerabilities (e.g. AI-found zero-days, autonomous bug-hunting agents, AI in CTFs/bug bounties). 'industry' for general AI model/company news.",
+                "'security' for stories about newly disclosed security vulnerabilities, zero-days, CVEs, or exploits affecting widely-used products/platforms (Windows, macOS, iOS, Android, Chrome/browsers, Linux, major enterprise software, etc.), whether or not AI was involved in finding them. 'industry' for general AI model/company news.",
             },
             company: {
               type: "string",
               enum: ["anthropic", "openai", "google", "xai", "other"],
               description:
-                "Which company this story is primarily about (or whose model/tooling was used, for security stories). Use 'other' for emerging/new players or third-party tools not in the main four.",
+                "Which company this story is primarily about. For 'security' stories, use the AI company involved in finding the vulnerability if any (e.g. Google for a Big Sleep finding), otherwise 'other'. Use 'other' for emerging/new players or third-party tools not in the main four.",
+            },
+            product: {
+              type: "string",
+              description:
+                "Required when category is 'security': the affected product/platform, e.g. 'Windows', 'Chrome', 'macOS', 'iOS', 'Android', 'Linux'. Omit for 'industry' stories.",
             },
             title: { type: "string", description: "Short headline, max ~12 words." },
             summary: {
@@ -59,28 +64,36 @@ const DIGEST_TOOL = {
   },
 };
 
-const SYSTEM_PROMPT = `You are a news editor producing a daily briefing on developments in AI, focused on Anthropic, OpenAI, Google (Gemini/DeepMind), xAI (Grok), and any new/emerging players in the field. You also track a second beat: AI being used to find security vulnerabilities (autonomous bug-hunting agents, AI-found zero-days/CVEs, AI in CTFs or bug bounties, LLM-assisted vulnerability research).
+const SYSTEM_PROMPT = `You are a news editor producing a recurring briefing with two beats:
 
-You will be given a list of raw news items (title, link, source, published date, short snippet) gathered from official company blogs, general AI news outlets, and security news outlets since the previous update.
+1. AI industry news: developments from Anthropic, OpenAI, Google (Gemini/DeepMind), xAI (Grok), and any new/emerging players in the field.
+2. Security vulnerabilities: newly disclosed zero-days, CVEs, and exploits affecting widely-used products and platforms (Windows, macOS, iOS/iPhone, Android, Chrome/browsers, Linux, major enterprise software, etc.) - regardless of whether AI was involved in finding them.
+
+You will be given:
+- A list of stories already reported in the previous update (title and source links), so you can avoid duplicates.
+- A list of raw news items (title, link, source, published date, short snippet) gathered from official company blogs, general AI news outlets, and security news outlets since the previous update.
 
 Your job:
 1. Cluster items that refer to the same underlying story/event together into a single card.
-2. Write a clear, concise headline and 2-3 sentence summary for each story.
-3. Classify each story's category:
-   - 'security' if it's about AI/LLM systems or agents discovering, triaging, or exploiting software vulnerabilities.
+2. Skip any story that is substantially the same as one already reported in the previous update, unless there's a significant new development - in that case, create a new card describing just the update.
+3. Write a clear, concise headline and 2-3 sentence summary for each story.
+4. Classify each story's category:
+   - 'security' for newly disclosed vulnerabilities/zero-days/exploits in widely-used products or platforms.
    - 'industry' for general AI model/company news.
-4. Classify each story by company (anthropic/openai/google/xai/other - use 'other' for emerging players like Mistral, Meta AI, DeepSeek, or third-party security tools/startups).
-5. Fact-check each story:
+5. For 'security' stories, set 'product' to the affected product/platform (e.g. 'Windows', 'Chrome', 'macOS', 'iOS', 'Android', 'Linux'). Omit 'product' for 'industry' stories.
+6. Classify each story by company (anthropic/openai/google/xai/other - use 'other' for emerging players like Mistral, Meta AI, DeepSeek, third-party security tools/startups, or when no AI company is relevant).
+7. Fact-check each story:
    - Mark verified=true if the story appears in 2+ independent sources in the input, OR comes from the relevant company's own official blog.
    - Mark verified=false if it relies on a single secondary source, a rumor, speculation, or an opinion piece - and explain why in verificationNote.
-6. Skip items that are not meaningfully about AI model/company developments or AI-driven security vulnerability research (ignore generic tech news, ads, unrelated security news with no AI angle).
-7. If there is genuinely nothing newsworthy, return an empty cards array.
+8. Skip items that are not meaningfully about AI model/company developments or notable security vulnerabilities in major products (ignore generic tech news, ads, unrelated content).
+9. If there is genuinely nothing new to report, return an empty cards array.
 
 Be conservative with the "verified" flag - when in doubt, mark it unverified and explain the gap.`;
 
 interface ClaudeCard {
   category: NewsCard["category"];
   company: NewsCard["company"];
+  product?: string;
   title: string;
   summary: string;
   sourceLinks: string[];
@@ -105,20 +118,26 @@ function buildSourceLookup(items: RawItem[]): Map<string, RawItem> {
   return map;
 }
 
-export async function generateDigest(items: RawItem[]): Promise<Digest> {
+export async function generateDigest(items: RawItem[], previousCards: NewsCard[] = []): Promise<Digest> {
   const now = new Date();
   const date = now.toISOString().slice(0, 10);
+  const carryOver: NewsCard[] = previousCards.map((card) => ({ ...card, isNew: false }));
 
   if (items.length === 0) {
-    return { date, generatedAt: now.toISOString(), cards: [] };
+    return { date, generatedAt: now.toISOString(), cards: carryOver };
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn("ANTHROPIC_API_KEY not configured; skipping digest generation.");
-    return { date, generatedAt: now.toISOString(), cards: [] };
+    return { date, generatedAt: now.toISOString(), cards: carryOver };
   }
 
   const client = new Anthropic();
+
+  const previousStories = previousCards.map((card) => ({
+    title: card.title,
+    sourceLinks: card.sources.map((source) => source.url),
+  }));
 
   const response = await client.messages.create({
     model: MODEL,
@@ -129,7 +148,11 @@ export async function generateDigest(items: RawItem[]): Promise<Digest> {
     messages: [
       {
         role: "user",
-        content: `Here are the raw news items since the previous update:\n\n${JSON.stringify(
+        content: `Stories already reported in the previous update (avoid duplicating these unless there's a significant new development):\n\n${JSON.stringify(
+          previousStories,
+          null,
+          2
+        )}\n\nHere are the raw news items since the previous update:\n\n${JSON.stringify(
           items,
           null,
           2
@@ -140,16 +163,17 @@ export async function generateDigest(items: RawItem[]): Promise<Digest> {
 
   const toolUse = response.content.find((block) => block.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
-    return { date, generatedAt: now.toISOString(), cards: [] };
+    return { date, generatedAt: now.toISOString(), cards: carryOver };
   }
 
   const { cards = [] } = toolUse.input as { cards?: ClaudeCard[] };
   const sourceLookup = buildSourceLookup(items);
 
   const newsCards: NewsCard[] = cards.map((card, index) => ({
-    id: `${date}-${index}`,
+    id: `${date}-${now.getTime()}-${index}`,
     category: card.category,
     company: card.company,
+    product: card.category === "security" ? card.product : undefined,
     title: card.title,
     summary: card.summary,
     sources: card.sourceLinks.map((link) => ({
@@ -159,7 +183,8 @@ export async function generateDigest(items: RawItem[]): Promise<Digest> {
     verified: card.verified,
     verificationNote: card.verified ? undefined : card.verificationNote,
     publishedAt: card.publishedAt,
+    isNew: true,
   }));
 
-  return { date, generatedAt: now.toISOString(), cards: newsCards };
+  return { date, generatedAt: now.toISOString(), cards: [...newsCards, ...carryOver] };
 }

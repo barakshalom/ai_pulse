@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateDigest } from "@/lib/digest";
 import { fetchAllNews } from "@/lib/fetchNews";
-import { saveDigest } from "@/lib/kv";
+import { getPreviousNewCards, saveDigest, savePreviousNewCards } from "@/lib/kv";
 import { sendPushToAll } from "@/lib/push";
 
 export const maxDuration = 60;
@@ -15,14 +15,18 @@ export async function GET(request: Request) {
     }
   }
 
+  const previousNewCards = await getPreviousNewCards();
   const items = await fetchAllNews();
-  const digest = await generateDigest(items);
+  const digest = await generateDigest(items, previousNewCards);
   await saveDigest(digest);
 
-  if (digest.cards.length > 0) {
+  const newCards = digest.cards.filter((card) => card.isNew);
+  await savePreviousNewCards(newCards);
+
+  if (newCards.length > 0) {
     await sendPushToAll({
       title: "AI Pulse",
-      body: `Your AI briefing is ready — ${digest.cards.length} update${digest.cards.length === 1 ? "" : "s"}.`,
+      body: `Your AI briefing is ready — ${newCards.length} new update${newCards.length === 1 ? "" : "s"}.`,
       url: "/",
     });
   }
@@ -31,5 +35,6 @@ export async function GET(request: Request) {
     date: digest.date,
     itemsFetched: items.length,
     cardsGenerated: digest.cards.length,
+    newCards: newCards.length,
   });
 }
