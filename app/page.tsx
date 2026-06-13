@@ -16,7 +16,8 @@ export default async function Home() {
           <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">AI Pulse</h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Daily AI news from Anthropic, OpenAI, Google, xAI &amp; emerging players
+              Daily AI news from Anthropic, OpenAI, Google, xAI &amp; emerging players —
+              plus AI-driven security vulnerability research
             </p>
           </div>
           <NotificationSetup />

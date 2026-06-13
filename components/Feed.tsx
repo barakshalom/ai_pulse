@@ -4,22 +4,24 @@ import { useMemo, useState } from "react";
 import type { Company, NewsCard as NewsCardType } from "@/lib/types";
 import { NewsCard } from "./NewsCard";
 
-const FILTERS: { label: string; value: Company | "all" }[] = [
+const FILTERS: { label: string; value: Company | "all" | "security" }[] = [
   { label: "All", value: "all" },
   { label: "Anthropic", value: "anthropic" },
   { label: "OpenAI", value: "openai" },
   { label: "Google", value: "google" },
   { label: "xAI", value: "xai" },
   { label: "🆕 Emerging", value: "other" },
+  { label: "🛡️ AI Security", value: "security" },
 ];
 
 export function Feed({ cards }: { cards: NewsCardType[] }) {
-  const [filter, setFilter] = useState<Company | "all">("all");
+  const [filter, setFilter] = useState<Company | "all" | "security">("all");
 
-  const visibleCards = useMemo(
-    () => (filter === "all" ? cards : cards.filter((card) => card.company === filter)),
-    [cards, filter]
-  );
+  const visibleCards = useMemo(() => {
+    if (filter === "all") return cards;
+    if (filter === "security") return cards.filter((card) => card.category === "security");
+    return cards.filter((card) => card.company === filter);
+  }, [cards, filter]);
 
   return (
     <div>

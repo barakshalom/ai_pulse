@@ -1,5 +1,7 @@
 export type Company = "anthropic" | "openai" | "google" | "xai" | "other";
 
+export type Category = "industry" | "security";
+
 export interface NewsSource {
   name: string;
   url: string;
@@ -7,6 +9,7 @@ export interface NewsSource {
 
 export interface NewsCard {
   id: string;
+  category: Category;
   company: Company;
   title: string;
   summary: string;

@@ -1,5 +1,6 @@
 import type { NewsCard as NewsCardType } from "@/lib/types";
 import { CompanyBadge } from "./CompanyBadge";
+import { SecurityBadge } from "./SecurityBadge";
 import { VerifiedBadge } from "./VerifiedBadge";
 
 function timeAgo(iso: string): string {
@@ -15,7 +16,8 @@ export function NewsCard({ card }: { card: NewsCardType }) {
   return (
     <article className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {card.category === "security" && <SecurityBadge />}
           <CompanyBadge company={card.company} />
           <VerifiedBadge verified={card.verified} note={card.verificationNote} />
         </div>

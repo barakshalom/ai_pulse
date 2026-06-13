@@ -1,5 +1,5 @@
 import Parser from "rss-parser";
-import { HN_ALGOLIA_URL, NEWS_FEEDS, OFFICIAL_FEEDS } from "./sources";
+import { HN_ALGOLIA_URL, NEWS_FEEDS, OFFICIAL_FEEDS, SECURITY_FEEDS } from "./sources";
 import type { RawItem } from "./types";
 
 const parser = new Parser();
@@ -59,7 +59,7 @@ function isWithinLastDay(publishedAt: string): boolean {
  * from roughly the last 24 hours.
  */
 export async function fetchAllNews(): Promise<RawItem[]> {
-  const feeds = [...OFFICIAL_FEEDS, ...NEWS_FEEDS];
+  const feeds = [...OFFICIAL_FEEDS, ...NEWS_FEEDS, ...SECURITY_FEEDS];
 
   const results = await Promise.all([
     ...feeds.map((feed) => fetchFeed(feed.name, feed.url)),

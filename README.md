@@ -1,14 +1,18 @@
 # AI Pulse
 
 A personal, free daily digest of AI news — focused on Anthropic, OpenAI, Google
-(Gemini/DeepMind), xAI (Grok), and emerging players. Built as a PWA so it can
-be installed on your iPhone home screen with no App Store and no fees.
+(Gemini/DeepMind), xAI (Grok), and emerging players — plus a second beat on AI
+being used to find security vulnerabilities (autonomous bug-hunting agents,
+AI-found zero-days/CVEs, AI in CTFs/bug bounties). Built as a PWA so it can be
+installed on your iPhone home screen with no App Store and no fees.
 
 ## How it works
 
 1. A daily cron job (`/api/cron/daily-digest`) fetches the last 24h of items
-   from official company blogs, AI news RSS feeds, and Hacker News.
+   from official company blogs, AI news RSS feeds, security news outlets, and
+   Hacker News.
 2. Those items are sent to Claude (Haiku) to cluster, summarize, classify by
+   category (general AI industry news vs. AI-driven security research) and
    company, and **fact-check**: stories from official blogs or corroborated by
    2+ sources are marked "Verified"; single-source/rumor stories are marked
    "Unverified" with an explanation.
@@ -87,7 +91,7 @@ at 08:00 UTC — edit the `schedule` field to change the time).
 - `app/page.tsx` — main card feed
 - `app/api/cron/daily-digest/route.ts` — daily pipeline (fetch → summarize/fact-check → store → push)
 - `app/api/push/subscribe/route.ts` — saves push subscriptions
-- `lib/sources.ts` — RSS feed + news source configuration
+- `lib/sources.ts` — RSS feed + news source configuration (incl. security feeds)
 - `lib/fetchNews.ts` — fetches RSS feeds + Hacker News
 - `lib/digest.ts` — Claude-based clustering, summarization, fact-checking
 - `lib/kv.ts` — Redis storage for digests and push subscriptions
