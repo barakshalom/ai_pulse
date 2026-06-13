@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/api/cron/daily-digest -H \"Authorization: Bearer a*91&sdLKjq2e89Hu129l-120\" -w \"\\\\nHTTP %{http_code}\\\\n\" --max-time 100)",
+      "Bash(curl -s http://localhost:3000 -o /tmp/page.html -w \"HTTP %{http_code}\\\\n\")",
+      "Read(//private/tmp/**)"
     ]
   }
 }

@@ -112,7 +112,7 @@ export async function generateDigest(items: RawItem[]): Promise<Digest> {
 
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 8192,
     system: SYSTEM_PROMPT,
     tools: [DIGEST_TOOL],
     tool_choice: { type: "tool", name: "submit_digest" },
@@ -133,7 +133,7 @@ export async function generateDigest(items: RawItem[]): Promise<Digest> {
     return { date, generatedAt: now.toISOString(), cards: [] };
   }
 
-  const { cards } = toolUse.input as { cards: ClaudeCard[] };
+  const { cards = [] } = toolUse.input as { cards?: ClaudeCard[] };
   const sourceLookup = buildSourceLookup(items);
 
   const newsCards: NewsCard[] = cards.map((card, index) => ({
